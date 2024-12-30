@@ -1,4 +1,5 @@
 # plugin-repo
+[![](https://data.jsdelivr.com/v1/package/gh/dimelords/plugin-repo/badge)](https://www.jsdelivr.com/package/gh/dimelords/plugin-repo)
 
 A repository of plugins for React applications using a dynamic plugin loading system. This repository serves as a CDN source for plugin code that can be dynamically loaded into React applications at runtime.
 
