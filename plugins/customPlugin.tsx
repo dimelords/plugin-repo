@@ -3,7 +3,14 @@ declare global {
     Chart: typeof import("chart.js").Chart;
   }
 }
-import React, { useEffect, useRef } from "react";
+
+const React = (window as any).React || window.React;
+const { useRef, useEffect } = React as {
+  useRef: <T>(initialValue: T | null) => { current: T | null };
+  useEffect: (effect: () => void | (() => void), deps?: any[]) => void;
+  createElement: typeof import("react").createElement;
+};
+
 import { BasePlugin, PluginConfig, PluginManifest } from "./utils/basePlugin";
 interface ContentProps {
   manifest: PluginManifest;
@@ -44,7 +51,8 @@ class CustomPluginBase extends BasePlugin {
 }
 
 function CustomPluginContent({ manifest, config }: ContentProps) {
-  const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<HTMLCanvasElement | null>(null);
+
   const chartInstance = useRef<any>(null);
 
   useEffect(() => {
