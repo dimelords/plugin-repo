@@ -26,7 +26,14 @@ jobs:
     
     - name: Install dependencies
       run: npm ci
-      
+
+    - name: Update manifest branch reference
+      run: |
+        REF=${{ github.ref_name }}
+        for manifest in manifests/*.manifest.js; do
+          sed -i "s/@[^/]*\/dist/@${REF}\/dist/g" "$manifest"
+        done
+    
     - name: Build plugins
       run: npm run build
       
@@ -35,7 +42,8 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add -f dist/
-        git commit -m "chore: update dist files" || echo "No changes to commit"
+        git add manifests/*.manifest.js
+        git commit -m "chore: update dist files and manifests" || echo "No changes to commit"
         git push
         
     - name: Purge jsDelivr cache
