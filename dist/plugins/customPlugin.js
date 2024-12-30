@@ -14,7 +14,7 @@ class BasePlugin {
 }
 
 const React = window.React || window.React;
-const { useRef, useEffect, createElement } = React;
+const { useRef, useEffect } = React;
 class CustomPluginBase extends BasePlugin {
     constructor() {
         super();

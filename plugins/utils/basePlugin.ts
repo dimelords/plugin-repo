@@ -1,3 +1,11 @@
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [elemName: string]: any;
+    }
+  }
+}
+
 export interface PluginConfig {
   theme: string;
   [key: string]: any;
@@ -11,7 +19,7 @@ export interface PluginManifest {
 export abstract class BasePlugin {
   manifest: PluginManifest;
   protected config: PluginConfig;
-  
+
 
   constructor() {
     this.manifest = {
@@ -27,5 +35,5 @@ export abstract class BasePlugin {
     return this.config;
   }
 
-  abstract render(): JSX.Element;
+  abstract render(): React.ReactElement;
 }

@@ -32,7 +32,7 @@ class CustomPluginBase extends BasePlugin {
     return this.config as PluginConfig;
   }
 
-  renderContent(props: ContentProps): JSX.Element {
+  renderContent(props: ContentProps): React.ReactElement {
     return (
       <CustomPluginContent
         {...props}
@@ -42,7 +42,7 @@ class CustomPluginBase extends BasePlugin {
     );
   }
 
-  render(): JSX.Element {
+  render(): React.ReactElement {
     return this.renderContent({
       manifest: this.manifest,
       config: this.getConfig(),
