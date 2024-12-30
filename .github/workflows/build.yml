@@ -37,3 +37,23 @@ jobs:
         git add -f dist/
         git commit -m "chore: update dist files" || echo "No changes to commit"
         git push
+        
+    - name: Purge jsDelivr cache
+      run: |
+        # Get list of changed files
+        CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+        
+        # Function to purge cache for a file
+        purge_cache() {
+          local file=$1
+          local jsdelivr_url="https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/${file}"
+          echo "Purging cache for ${jsdelivr_url}"
+          curl -X POST "https://purge.jsdelivr.net/${jsdelivr_url}"
+        }
+        
+        # Purge cache for each changed file in dist/ and manifests/
+        echo "$CHANGED_FILES" | while read -r file; do
+          if [[ $file == dist/* ]] || [[ $file == manifests/* ]]; then
+            purge_cache "$file"
+          fi
+        done
