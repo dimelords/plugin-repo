@@ -4,7 +4,7 @@ export default {
     displayName: 'Custom Dynamic Plugin',
     description: 'A plugin that uses Chart.js',
     author: 'Fredrik Gustafsson',
-    entryPoint: 'customPlugin.jsx',
+    entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/plugins/customPlugin.jsx',
     dependencies: [],
     packages: [
       {
