@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+const React = window.React;
+const { useRef, useEffect } = React;
 
 class BasePlugin {
     constructor() {
