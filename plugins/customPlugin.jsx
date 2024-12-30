@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { BasePlugin } from "./basePlugin";
+import { BasePlugin } from "https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/plugins/utils/basePlugin.js";
+
 
 class CustomPluginBase extends BasePlugin {
   renderContent(props) {
