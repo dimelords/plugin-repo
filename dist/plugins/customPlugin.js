@@ -1,6 +1,3 @@
-const React = window.React;
-const { useRef, useEffect } = React;
-
 class BasePlugin {
     constructor() {
         this.manifest = {
@@ -14,11 +11,10 @@ class BasePlugin {
     getConfig() {
         return this.config;
     }
-    render() {
-        throw new Error('render() must be implemented by child class');
-    }
 }
 
+const React = window.React || window.React;
+const { useRef, useEffect, createElement } = React;
 class CustomPluginBase extends BasePlugin {
     constructor() {
         super();
