@@ -1,19 +1,44 @@
 # plugin-repo
 [![](https://data.jsdelivr.com/v1/package/gh/dimelords/plugin-repo/badge)](https://www.jsdelivr.com/package/gh/dimelords/plugin-repo)
 
-A repository of plugins for React applications using a dynamic plugin loading system. This repository serves as a CDN source for plugin code that can be dynamically loaded into React applications at runtime.
+A repository of plugins for React applications using a TypeScript-based dynamic plugin loading system. This repository serves as a CDN source for plugin code that can be dynamically loaded into React applications at runtime.
 
 ## Structure
 
 ```
 plugin-repo/
 ├── plugins/
-│   ├── customPlugin.js
-│   └── anotherPlugin.js
-├── manifests/
-│   ├── custom.manifest.js
-│   └── another.manifest.js
+│   ├── utils/
+│   │   └── basePlugin.ts    # Base plugin class and interfaces
+│   └── customPlugin.tsx     # Example custom plugin implementation
+├── dist/                    # Built JavaScript files (generated)
 └── README.md
+```
+
+## Development
+
+### Prerequisites
+
+- Node.js (v20 or later)
+- npm
+
+### Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/dimelords/plugin-repo.git
+cd plugin-repo
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Build the plugins
+```bash
+npm run type-check  # Run TypeScript type checking
+npm run build      # Build plugins to dist directory
 ```
 
 ## Usage
@@ -27,7 +52,7 @@ To use these plugins in your React application, reference them in your manifest 
   name: 'custom',
   version: '1.0.0',
   displayName: 'Custom Plugin',
-  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/plugins/customPlugin.js',
+  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/customPlugin.js',
   // ... other manifest properties
 }
 ```
@@ -38,52 +63,75 @@ Plugins are versioned using Git tags. To use a specific version of a plugin, rep
 
 ## Creating New Plugins
 
-1. Add your plugin code in the `plugins/` directory
-2. Create a corresponding manifest in the `manifests/` directory
-3. Ensure your plugin extends the base plugin class
-4. Test your plugin locally before committing
-5. Tag your release with a semantic version number
+1. Create a new `.tsx` file in the `plugins/` directory
+2. Extend the BasePlugin class:
+
+```typescript
+import { BasePlugin } from "./utils/basePlugin";
+
+class YourPlugin extends BasePlugin {
+    manifest = {
+        displayName: "Your Plugin Name",
+        id: "your-plugin-id"
+    };
+
+    render(): JSX.Element {
+        return (
+            // Your React component here
+        );
+    }
+}
+
+export default YourPlugin;
+```
+
+3. Test your plugin locally before committing
+4. Tag your release with a semantic version number
 
 ## Plugin Requirements
 
-- Plugins must be written in React and export a default class
-- Each plugin needs a corresponding manifest file
+- Plugins must be written in TypeScript/React and export a default class
+- Each plugin must extend the BasePlugin class
 - Plugins should handle their own cleanup and initialization
 - External dependencies should be declared in the manifest
 
 ### Example Plugin Structure
 
-```javascript
-// plugins/customPlugin.js
+```typescript
+// plugins/customPlugin.tsx
 import React, { useEffect, useRef } from 'react';
+import { BasePlugin, PluginConfig, PluginManifest } from "./utils/basePlugin";
 
-class CustomPluginBase {
-  constructor(name, manifest) {
-    this.name = name;
-    this.manifest = manifest;
-  }
-
-  getConfig() {
-    return this.manifest.config;
-  }
-
-  renderContent(props) {
-    return <CustomPluginContent {...props} manifest={this.manifest} config={this.getConfig()} />;
-  }
-
-  render() {
-    return this.renderContent();
-  }
+interface ContentProps {
+    manifest: PluginManifest;
+    config: PluginConfig;
 }
 
-function CustomPluginContent({ manifest, config }) {
-  // Your component code here
-  return (
-    <div>
-      <h2>{manifest.displayName}</h2>
-      // ... more JSX
-    </div>
-  );
+class CustomPluginBase extends BasePlugin {
+    manifest = {
+        displayName: "Custom Plugin",
+        id: "custom-plugin"
+    };
+
+    renderContent(props: ContentProps): JSX.Element {
+        return <CustomPluginContent {...props} manifest={this.manifest} config={this.getConfig()} />;
+    }
+
+    render(): JSX.Element {
+        return this.renderContent({
+            manifest: this.manifest,
+            config: this.getConfig()
+        });
+    }
+}
+
+function CustomPluginContent({ manifest, config }: ContentProps) {
+    return (
+        <div className={`p-4 bg-${config.theme}-100 rounded`}>
+            <h2 className="font-bold">{manifest.displayName}</h2>
+            {/* Your component JSX here */}
+        </div>
+    );
 }
 
 export default CustomPluginBase;
@@ -99,7 +147,7 @@ export default {
   displayName: 'Custom Plugin',
   description: 'A dynamically loaded plugin',
   author: 'Your Name',
-  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/plugins/customPlugin.js',
+  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/customPlugin.js',
   packages: [
     {
       name: 'chart.js',
@@ -113,6 +161,19 @@ export default {
   }
 };
 ```
+
+## Build System
+
+The project uses:
+- TypeScript for type checking and compilation
+- Rollup for bundling
+- GitHub Actions for automatic builds
+
+The build process:
+1. Runs type checking on all TypeScript files
+2. Bundles plugins into ES modules
+3. Outputs built files to the `dist` directory
+4. Automatically commits built files when merged to main
 
 ## Contributing
 
