@@ -49,10 +49,29 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+        # Create temporary branch if we're in detached HEAD (tag checkout)
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TEMP_BRANCH="temp-${TAG_NAME}"
+          git checkout -b "$TEMP_BRANCH"
+        fi
+        
         git add -f dist/
         git add manifests/*.manifest.js
         git commit -m "chore: update dist files and manifests" || echo "No changes to commit"
-        git push
+        
+        # Push changes based on context
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          # Push to temporary branch and update tag
+          git push origin "$TEMP_BRANCH"
+          git tag -f "$TAG_NAME"
+          git push origin ":$TAG_NAME"
+          git push origin "$TAG_NAME"
+          git push origin --delete "$TEMP_BRANCH"
+        else
+          git push
+        fi
         
     - name: Purge jsDelivr cache
       run: |
