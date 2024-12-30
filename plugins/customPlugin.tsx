@@ -1,9 +1,31 @@
+declare global {
+  interface Window {
+    Chart: typeof import("chart.js").Chart;
+  }
+}
 import React, { useEffect, useRef } from "react";
-import { BasePlugin } from "https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/plugins/utils/basePlugin.js";
-
+import { BasePlugin, PluginConfig, PluginManifest } from "./utils/basePlugin";
+interface ContentProps {
+  manifest: PluginManifest;
+  config: PluginConfig;
+}
 
 class CustomPluginBase extends BasePlugin {
-  renderContent(props) {
+  manifest: PluginManifest;
+
+  constructor() {
+    super();
+    this.manifest = {
+      displayName: "Custom Plugin",
+      id: "custom-plugin",
+    };
+  }
+
+  getConfig(): PluginConfig {
+    return this.config as PluginConfig;
+  }
+
+  renderContent(props: ContentProps): JSX.Element {
     return (
       <CustomPluginContent
         {...props}
@@ -13,19 +35,21 @@ class CustomPluginBase extends BasePlugin {
     );
   }
 
-  render() {
-    return this.renderContent();
+  render(): JSX.Element {
+    return this.renderContent({
+      manifest: this.manifest,
+      config: this.getConfig(),
+    });
   }
 }
 
-function CustomPluginContent({ manifest, config }) {
-  const chartRef = useRef(null);
-  const chartInstance = useRef(null);
+function CustomPluginContent({ manifest, config }: ContentProps) {
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstance = useRef<any>(null);
 
   useEffect(() => {
-    if (chartRef.current && window.Chart) {
-      const ctx = chartRef.current.getContext("2d");
-
+    const ctx = chartRef.current?.getContext("2d");
+    if (chartRef.current && ctx && window.Chart) {
       chartInstance.current = new window.Chart(ctx, {
         type: "bar",
         data: {
