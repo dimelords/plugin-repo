@@ -4,11 +4,12 @@ declare global {
   }
 }
 
+import manifest from "../manifests/custom.manifest.js";
+
 const React = (window as any).React || window.React;
 const { useRef, useEffect } = React as {
   useRef: <T>(initialValue: T | null) => { current: T | null };
   useEffect: (effect: () => void | (() => void), deps?: any[]) => void;
-  createElement: typeof import("react").createElement;
 };
 
 import { BasePlugin, PluginConfig, PluginManifest } from "./utils/basePlugin";
@@ -18,14 +19,8 @@ interface ContentProps {
 }
 
 class CustomPluginBase extends BasePlugin {
-  manifest: PluginManifest;
-
   constructor() {
-    super();
-    this.manifest = {
-      displayName: "Custom Plugin",
-      id: "custom-plugin",
-    };
+    super(manifest);
   }
 
   getConfig(): PluginConfig {

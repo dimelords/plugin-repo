@@ -1,4 +1,6 @@
-export default {
+import type { PluginManifest } from '@plugins/utils/basePlugin';
+
+const manifest: PluginManifest = {
     name: 'custom',
     version: '1.0.0',
     displayName: 'Custom Dynamic Plugin',
@@ -17,4 +19,6 @@ export default {
     config: {
       theme: 'purple'
     }
-  };
+};
+
+export default manifest;

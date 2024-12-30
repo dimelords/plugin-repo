@@ -2,7 +2,7 @@ import babel from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import fs from 'fs';
-import path from 'path';
+import alias from '@rollup/plugin-alias';
 
 const plugins = fs
   .readdirSync('./plugins')
@@ -15,6 +15,12 @@ const plugins = fs
     },
     external: ['react', 'react-dom'],
     plugins: [
+      alias({
+        entries: [
+          { find: '@manifests', replacement: './manifests' },
+          { find: '@plugins', replacement: './plugins' }
+        ]
+      }),
       nodeResolve(),
       typescript(),
       babel({

@@ -8,6 +8,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@manifests/*": ["manifests/*"],
+      "@plugins/*": ["plugins/*"]
+    }
   },
   "include": [
     "plugins/**/*"

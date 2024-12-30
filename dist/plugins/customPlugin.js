@@ -1,15 +1,47 @@
+const manifest = {
+    name: 'custom',
+    version: '1.0.0',
+    displayName: 'Custom Dynamic Plugin',
+    description: 'A plugin that uses Chart.js',
+    author: 'Fredrik Gustafsson',
+    entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/customPlugin.js',
+    dependencies: [],
+    packages: [
+        {
+            name: 'chart.js',
+            version: '4.4.1',
+            globalName: 'Chart',
+            url: 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'
+        }
+    ],
+    config: {
+        theme: 'purple'
+    }
+};
+
 class BasePlugin {
-    constructor() {
+    constructor(manifestData) {
         this.manifest = {
-            displayName: '',
-            id: ''
+            name: 'base',
+            version: '1.0.0',
+            displayName: 'Base Plugin',
+            description: 'Base plugin implementation',
+            author: 'Unknown',
+            entryPoint: '',
+            dependencies: [],
+            packages: [],
+            config: {
+                theme: 'gray'
+            },
+            ...manifestData
         };
-        this.config = {
-            theme: 'gray'
-        };
+        this.config = this.manifest.config;
     }
     getConfig() {
         return this.config;
+    }
+    render() {
+        throw new Error('render() must be implemented by child class');
     }
 }
 
@@ -17,11 +49,7 @@ const React = window.React || window.React;
 const { useRef, useEffect } = React;
 class CustomPluginBase extends BasePlugin {
     constructor() {
-        super();
-        this.manifest = {
-            displayName: "Custom Plugin",
-            id: "custom-plugin",
-        };
+        super(manifest);
     }
     getConfig() {
         return this.config;

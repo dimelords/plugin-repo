@@ -1,25 +1,33 @@
-# plugin-repo
+# Plugin Repository
 [![](https://data.jsdelivr.com/v1/package/gh/dimelords/plugin-repo/badge)](https://www.jsdelivr.com/package/gh/dimelords/plugin-repo)
 
-A repository of plugins for React applications using a TypeScript-based dynamic plugin loading system. This repository serves as a CDN source for plugin code that can be dynamically loaded into React applications at runtime.
+A TypeScript-based plugin system for React applications that supports dynamic loading via CDN. This repository serves as both the plugin registry and runtime delivery mechanism.
 
-## Structure
+## Features
+
+- TypeScript support out of the box
+- Dynamic loading via jsDelivr CDN
+- Automatic builds via GitHub Actions
+- Automatic cache purging
+- External package management (e.g., Chart.js)
+
+## Project Structure
 
 ```
 plugin-repo/
-├── plugins/                 # Source files
+├── plugins/                  # Source files
 │   ├── utils/
-│   │   └── basePlugin.ts   # Base plugin class and interfaces
-│   └── customPlugin.tsx    # Example custom plugin implementation
-├── manifests/              # Plugin manifests
-│   └── custom.manifest.js  # Manifest points to dist/plugins/customPlugin.js
-├── dist/                   # Built JavaScript files (generated)
+│   │   └── basePlugin.ts    # Base plugin class and interfaces
+│   └── customPlugin.tsx     # Example plugin implementation
+├── manifests/               # Plugin manifests
+│   └── custom.manifest.ts   # Example manifest
+├── dist/                    # Built files (generated)
 │   └── plugins/
-│       └── customPlugin.js # Built version used at runtime
+│       └── customPlugin.js  # Built plugin
 └── README.md
 ```
 
-## Development
+## Plugin Development
 
 ### Prerequisites
 
@@ -39,50 +47,35 @@ cd plugin-repo
 npm install
 ```
 
-3. Build the plugins
+### Development Workflow
+
+1. Create your plugin files in `plugins/`
+2. Create a manifest in `manifests/`
+3. Build locally to test
 ```bash
 npm run type-check  # Run TypeScript type checking
-npm run build      # Build plugins to dist directory
+npm run build      # Build plugins
 ```
 
-## Usage
+### Creating a New Plugin
 
-### Loading Plugins
-
-To use these plugins in your React application, reference them in your manifest using the jsDelivr CDN URL. Note that the manifest's entryPoint should point to the built file in the dist directory, not the source file:
-
-```javascript
-{
-  name: 'custom',
-  version: '1.0.0',
-  displayName: 'Custom Plugin',
-  // Point to the built .js file in dist/, not the source .tsx file
-  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/customPlugin.js',
-  // ... other manifest properties
-}
-```
-
-### Version Control
-
-Plugins are versioned using Git tags. To use a specific version of a plugin, replace `@main` with `@v1.0.0` in the CDN URL.
-
-## Creating New Plugins
-
-1. Create a new `.tsx` file in the `plugins/` directory
-2. Extend the BasePlugin class:
+1. Create a new `.tsx` file in `plugins/`:
 
 ```typescript
+import React from "react";
 import { BasePlugin } from "./utils/basePlugin";
+import manifest from "@manifests/your.manifest";
 
 class YourPlugin extends BasePlugin {
-    manifest = {
-        displayName: "Your Plugin Name",
-        id: "your-plugin-id"
-    };
+    constructor() {
+        super(manifest);
+    }
 
-    render(): JSX.Element {
+    render(): React.ReactElement {
         return (
-            // Your React component here
+            <div className={`p-4 bg-${this.getConfig().theme}-100`}>
+                {this.manifest.displayName}
+            </div>
         );
     }
 }
@@ -90,102 +83,112 @@ class YourPlugin extends BasePlugin {
 export default YourPlugin;
 ```
 
-3. Create a manifest file in `manifests/` directory pointing to the built version
-4. Test your plugin locally before committing
-5. Tag your release with a semantic version number
-
-## Plugin Requirements
-
-- Plugins must be written in TypeScript/React and export a default class
-- Each plugin must extend the BasePlugin class
-- Plugins should handle their own cleanup and initialization
-- External dependencies should be declared in the manifest
-- Manifests must point to the built `.js` file in the `dist/` directory
-
-### Example Plugin Structure
+2. Create a manifest file in `manifests/`:
 
 ```typescript
-// plugins/customPlugin.tsx
-import React, { useEffect, useRef } from 'react';
-import { BasePlugin, PluginConfig, PluginManifest } from "./utils/basePlugin";
+import type { PluginManifest } from '../plugins/utils/basePlugin';
 
-interface ContentProps {
-    manifest: PluginManifest;
-    config: PluginConfig;
-}
-
-class CustomPluginBase extends BasePlugin {
-    manifest = {
-        displayName: "Custom Plugin",
-        id: "custom-plugin"
-    };
-
-    renderContent(props: ContentProps): JSX.Element {
-        return <CustomPluginContent {...props} manifest={this.manifest} config={this.getConfig()} />;
+const manifest: PluginManifest = {
+    name: 'your-plugin',
+    version: '1.0.0',
+    displayName: 'Your Plugin',
+    description: 'Your plugin description',
+    author: 'Your Name',
+    entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/yourPlugin.js',
+    dependencies: [],
+    packages: [
+        {
+            name: 'some-package',
+            version: '1.0.0',
+            globalName: 'GlobalName',
+            url: 'https://cdn.jsdelivr.net/npm/some-package@1.0.0'
+        }
+    ],
+    config: {
+        theme: 'blue'
     }
-
-    render(): JSX.Element {
-        return this.renderContent({
-            manifest: this.manifest,
-            config: this.getConfig()
-        });
-    }
-}
-
-function CustomPluginContent({ manifest, config }: ContentProps) {
-    return (
-        <div className={`p-4 bg-${config.theme}-100 rounded`}>
-            <h2 className="font-bold">{manifest.displayName}</h2>
-            {/* Your component JSX here */}
-        </div>
-    );
-}
-
-export default CustomPluginBase;
-```
-
-### Example Manifest Structure
-
-```javascript
-// manifests/custom.manifest.js
-export default {
-  name: 'custom',
-  version: '1.0.0',
-  displayName: 'Custom Plugin',
-  description: 'A dynamically loaded plugin',
-  author: 'Your Name',
-  // Note: entryPoint points to the built file, not the source
-  entryPoint: 'https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/customPlugin.js',
-  packages: [
-    {
-      name: 'chart.js',
-      version: '4.4.1',
-      globalName: 'Chart',
-      url: 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'
-    }
-  ],
-  config: {
-    theme: 'purple'
-  }
 };
+
+export default manifest;
 ```
 
 ## Build System
 
 The project uses:
-- TypeScript for type checking and compilation
+- TypeScript for type safety
 - Rollup for bundling
-- GitHub Actions for automatic builds
-- jsDelivr for CDN delivery
+- GitHub Actions for CI/CD
 
-The build process:
-1. Runs type checking on all TypeScript files
-2. Bundles plugins into ES modules
-3. Outputs built files to the `dist` directory
-4. Automatically commits built files when merged to main
-5. Purges jsDelivr cache for any updated files
+### Build Process
 
-Note: After changes are pushed to main, the GitHub Action automatically purges the jsDelivr cache for updated files. This ensures that users always get the latest version of your plugins and manifests when using the CDN URLs.
+1. GitHub Action triggers on push to main
+2. Runs type checking
+3. Builds plugins into ES modules
+4. Commits built files to dist/
+5. Purges jsDelivr cache
+
+### Path Aliases
+
+The project supports path aliases for cleaner imports:
+- `@manifests/*` -> `manifests/*`
+- `@plugins/*` -> `plugins/*`
+
+Example:
+```typescript
+import manifest from "@manifests/custom.manifest";
+```
+
+## Using Plugins
+
+### CDN URLs
+
+Plugins are available via jsDelivr:
+```javascript
+https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@main/dist/plugins/[pluginName].js
+```
+
+### Version Control
+
+Use specific versions by changing @main to @version:
+```javascript
+https://cdn.jsdelivr.net/gh/dimelords/plugin-repo@v1.0.0/dist/plugins/customPlugin.js
+```
+
+### External Dependencies
+
+If your plugin requires external packages:
+1. Add them to your manifest's packages array
+2. They will be automatically loaded before your plugin initializes
+3. Use CDN URLs from trusted sources (cdnjs, jsdelivr, etc.)
+
+## TypeScript Interfaces
+
+### Base Plugin
+```typescript
+interface PluginConfig {
+    theme: string;
+    [key: string]: unknown;
+}
+
+interface PluginPackage {
+    name: string;
+    version: string;
+    globalName?: string;
+    url: string;
+}
+
+interface PluginManifest {
+    name: string;
+    version: string;
+    displayName: string;
+    description: string;
+    author: string;
+    entryPoint: string;
+    dependencies: string[];
+    packages: PluginPackage[];
+    config: PluginConfig;
+}
+```
 
 ## Contributing
 
